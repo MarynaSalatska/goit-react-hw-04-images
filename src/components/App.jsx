@@ -31,7 +31,11 @@ export function App() {
       setStatus('LOADING');
       try {
         const response = await getAlbumsService(query, page, perPage);
-        setAlbums(page === 1 ? response.hits : [...albums, ...response.hits]);
+        setAlbums(
+          page === 1
+            ? response.hits
+            : prevState => [...prevState, ...response.hits]
+        );
         setTotalHits(response.totalHits);
         setStatus('FULFILLED');
       } catch (error) {
@@ -40,7 +44,7 @@ export function App() {
     }
     getImg();
   }, [query, page, perPage]);
-  
+
   const handleSubmit = query => {
     setQuery(query);
     setPage(1);
@@ -50,14 +54,15 @@ export function App() {
     setPage(prevState => prevState + 1);
   };
 
+  const count = Math.ceil(totalHits / 12);
+  console.log(count);
+
   return (
     <div className="App">
       <Searchbar handleSubmit={handleSubmit} />
       <ImageGallery albums={albums} totalHits={totalHits} />
       {status === 'LOADING' && <Loader />}
-      {Math.floor(totalHits / perPage) > 1 && (
-        <Button onClick={handleLoadMore} />
-      )}
+      {count > 1 && count !== page && <Button onClick={handleLoadMore} />}
     </div>
   );
 }
