@@ -1,5 +1,5 @@
 import './styles.css';
-import React, { Component } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Searchbar } from './Searchbar/Searchbar';
 import { ImageGallery } from './ImageGallery/ImageGallery';
 
@@ -17,60 +17,47 @@ import { Loader } from './Loader/Loader';
   wrapperClass
 />;
 
-export class App extends Component {
-  state = {
-    albums: [],
-    status: 'idle',
-    page: 1,
-    query: '',
-    perPage: 12,
-    loadMore: false,
-  };
+export function App() {
+  const [albums, setAlbums] = useState([]);
+  const [status, setStatus] = useState('idle');
+  const [page, setPage] = useState(1);
+  const [query, setQuery] = useState('');
+  const [perPage] = useState(12);
+  const [totalHits, setTotalHits] = useState(0);
 
-  async componentDidUpdate(_, prevState) {
-    const { query, page, perPage } = this.state;
-    if (query !== prevState.query || page !== prevState.page) {
-      this.setState({ status: 'LOADING' });
+  useEffect(() => {
+    if (!query) return;
+    async function getImg() {
+      setStatus('LOADING');
       try {
-        const response = await getAlbumsService({ query, page, perPage });
-        this.setState({
-          totalHits: response.totalHits,
-          albums:
-            page === 1
-              ? response.hits
-              : [...this.state.albums, ...response.hits],
-          status: 'FULFILLED',
-        });
+        const response = await getAlbumsService(query, page, perPage);
+        setAlbums(page === 1 ? response.hits : [...albums, ...response.hits]);
+        setTotalHits(response.totalHits);
+        setStatus('FULFILLED');
       } catch (error) {
-        this.setState({ status: 'REJECTED' });
+        setStatus({ status: 'REJECTED' });
       }
     }
-  }
-
-  handleSubmit = query => {
-    this.setState({ query, page: 1 });
+    getImg();
+  }, [query, page, perPage]);
+  
+  const handleSubmit = query => {
+    setQuery(query);
+    setPage(1);
   };
 
-  handleLoadMore = () => {
-    this.setState(prevState => ({
-      page: prevState.page + 1,
-    }));
+  const handleLoadMore = () => {
+    setPage(prevState => prevState + 1);
   };
 
-  render() {
-    const { albums, status, totalHits } = this.state;
-
-    return (
-      <div className="App">
-        <Searchbar handleSubmit={this.handleSubmit} />
-
-        <ImageGallery albums={albums} totalHits={totalHits} />
-
-        {status === 'LOADING' && <Loader />}
-        {Math.floor(totalHits / this.state.perPage) > 1 && (
-          <Button onClick={this.handleLoadMore} />
-        )}
-      </div>
-    );
-  }
+  return (
+    <div className="App">
+      <Searchbar handleSubmit={handleSubmit} />
+      <ImageGallery albums={albums} totalHits={totalHits} />
+      {status === 'LOADING' && <Loader />}
+      {Math.floor(totalHits / perPage) > 1 && (
+        <Button onClick={handleLoadMore} />
+      )}
+    </div>
+  );
 }

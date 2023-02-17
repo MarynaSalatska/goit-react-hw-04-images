@@ -11,7 +11,7 @@ export function ImageGallery({ albums }) {
             key={hit.id}
             image={hit.webformatURL}
             largeImage={hit.largeImageURL}
-            tag={hit.tags}
+            tags={hit.tags}
           />
         ))}
     </ul>
@@ -20,7 +20,7 @@ export function ImageGallery({ albums }) {
 
 ImageGallery.propTypes = {
   albums: PropTypes.arrayOf(
-    PropTypes.exact({
+    PropTypes.shape({
       id: PropTypes.number.isRequired,
       webformatURL: PropTypes.string,
       tags: PropTypes.string.isRequired,

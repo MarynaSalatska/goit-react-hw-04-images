@@ -1,24 +1,21 @@
 import '../styles.css';
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
+import React, {  useState } from 'react';
 import { FcSearch } from 'react-icons/fc';
 
-export class Searchbar extends Component {
-  state = {
-    query: '',
+export function Searchbar (props) {
+  const [query, setQuery] = useState('');
+  const handleInput = e => {
+    setQuery( e.target.value);
   };
-  handleInput = event => {
-    this.setState({ query: event.target.value });
+  const handleFormSUbmit = e => {
+    e.preventDefault();
+    props.handleSubmit(query);
   };
-  handleFormSUbmit = event => {
-    event.preventDefault();
-    this.props.handleSubmit(this.state.query);
-  };
-
-  render() {
+ 
     return (
       <header className="Searchbar">
-        <form className="SearchForm" onSubmit={this.handleFormSUbmit}>
+        <form className="SearchForm" onSubmit={handleFormSUbmit}>
           <button type="submit" className="SearchFormButton">
             <FcSearch style={{ width: 20, height: 20 }} />
             <span className="SearchForm-button-label">Search</span>
@@ -29,17 +26,17 @@ export class Searchbar extends Component {
             type="text"
             autoComplete="off"
             name="name"
-            value={this.state.name}
+            value={query}
             autoFocus
-            onChange={this.handleInput}
+            onChange={handleInput}
             placeholder="Search images and photos"
           />
         </form>
       </header>
     );
   }
-}
+
 
 Searchbar.propTypes = {
-  onSubmit: PropTypes.func.isRequired,
+  handleSubmit: PropTypes.func.isRequired,
 };
